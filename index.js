@@ -13,10 +13,12 @@ var gauss = _.mapValues(grouped, group => {
 	return {σ, μ, n: amts.length};
 });
 
-var outside = _.mapValues(grouped, (group, k) =>
-	_.partition(group, t =>
+var regrouped = _.transform(grouped, (result, group, k) => {
+	var p = _.partition(group, t =>
 		within_σ(2, gauss[k].σ, gauss[k].μ)(t.amount)
-	)
-);
+	);
+	result[k] = p[0];
+	_.assign(result, _.groupBy(p[1], 'payee'));
+}, {});
 
-console.log(util.inspect(outside, {depth: null}));
+console.log(util.inspect(regrouped, {depth: null}));
