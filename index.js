@@ -1,6 +1,18 @@
 var tx = require('./db.json'); 
 var _ = require('lodash');
 var util = require('util');
+var moment = require('moment');
+
+var start = _.min(_.map(tx, t => new Date(t.date)));
+var end   = new Date();;
+
+var startWeek = moment(start).startOf('week');
+var endWeek   = moment(end).add(1, 'week').startOf('week');
+
+var zeroes = {};
+for(var week = startWeek; week.isBefore(endWeek); week = week.add(1, 'week')) {
+	zeroes[week.toString()] = 0;
+}
 
 var within_σ = (n, σ, μ) => x => (μ - n*σ) <= x && x <= (μ + n*σ);
 
@@ -21,4 +33,12 @@ var regrouped = _.transform(grouped, (result, group, k) => {
 	_.assign(result, _.groupBy(p[1], 'payee'));
 }, {});
 
-console.log(util.inspect(regrouped, {depth: null}));
+var counts = _.mapValues(regrouped, group => {
+	return _.defaults(_.countBy(group, t => moment(t.date).startOf('week')), zeroes);
+});
+
+var fish = _.mapValues(counts, group => {
+	return _.countBy(group);
+});
+
+console.log(util.inspect(fish, {depth: null}));
