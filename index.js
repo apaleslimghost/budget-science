@@ -31,6 +31,13 @@ var regrouped = _.transform(grouped, (result, group, k) => {
 	);
 	result[k] = p[0];
 	_.assign(result, _.groupBy(p[1], 'payee'));
+	_.assign(gauss, _.mapValues(_.groupBy(p[1], 'payee'), group => {
+		return {
+			σ: 0,
+			μ: group[0].amount,
+			n: 1
+		}
+	}));
 }, {});
 
 var counts = _.mapValues(regrouped, group => {
@@ -43,7 +50,9 @@ var countCounts = _.mapValues(counts, group => {
 
 var fish = _.mapValues(countCounts, group => {
 	var n = _.sum(group);
-	return _.reduce(group, (λ, amt, freq) => λ + parseInt(freq) * amt, 0) / n;
+	return {λ: _.reduce(group, (λ, amt, freq) => λ + parseInt(freq) * amt, 0) / n};
 });
 
-console.log(util.inspect(fish, {depth: null}));
+var combined = _.merge({}, fish, gauss);
+
+console.log(util.inspect(combined, {depth: null}));
