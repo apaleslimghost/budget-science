@@ -37,8 +37,13 @@ var counts = _.mapValues(regrouped, group => {
 	return _.defaults(_.countBy(group, t => moment(t.date).startOf('week')), zeroes);
 });
 
-var fish = _.mapValues(counts, group => {
+var countCounts = _.mapValues(counts, group => {
 	return _.countBy(group);
+});
+
+var fish = _.mapValues(countCounts, group => {
+	var n = _.sum(group);
+	return _.reduce(group, (λ, amt, freq) => λ + parseInt(freq) * amt, 0) / n;
 });
 
 console.log(util.inspect(fish, {depth: null}));
