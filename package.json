@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "fast-levenshtein": "^1.0.7",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
+    "springy": "^2.7.1",
     "stepford-cache": "^1.0.0"
   }
 }
