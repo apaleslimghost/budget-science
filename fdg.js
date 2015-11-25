@@ -1,4 +1,4 @@
-var tx = require('./db.json').slice(0, 1000);
+var tx = require('./db.json');
 var _ = require('lodash');
 var levenshtein = require('fast-levenshtein').get;
 var util = require('util');
@@ -33,23 +33,31 @@ pairs(tx).map(function(ts) {
 	graph.newEdge(
 		graph.nodeSet[p.ts[0].date],
 		graph.nodeSet[p.ts[1].date],
-		{length: p.similar}
+		{length: p.similar * 10}
 	);
 });
 
 var layout = new springy.Layout.ForceDirected(graph, 400, 400, 0.5, 1e-6);
 
-var iter = 1000;
+var canvas = document.createElement('canvas');
+canvas.width = canvas.height = 1000;
+canvas.style.width = canvas.style.height = '500px';
+document.body.appendChild(canvas);
+
+var ctx = canvas.getContext('2d');
 
 layout.start(function tick() {
-	console.log(iter);
-	if(!--iter) layout.stop();
-}, function onStop() {
+	ctx.clearRect(0, 0, 1000, 1000);
 	layout.eachEdge((edge, spring) => {
-		var d = Math.sqrt(Math.pow(spring.point1.p.x - spring.point2.p.x, 2) + Math.pow(spring.point1.p.y - spring.point2.p.y, 2));
-		if(d < 2) {
-			console.log(edge.source.data.tx, edge.target.data.tx)
-		}
+		ctx.beginPath();
+		ctx.moveTo(spring.point1.p.x + 500, spring.point1.p.y + 500);
+		ctx.lineTo(spring.point2.p.x + 500, spring.point2.p.y + 500);
+		ctx.strokeWidth = 2;
+		ctx.strokeStyle = 'red';
+		ctx.stroke();
+	});
+	layout.eachNode((node, p) => {
+		ctx.fillRect(p.p.x + 500, p.p.y + 500, 2, 2);
 	});
 });
 
