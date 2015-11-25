@@ -1,7 +1,9 @@
 var similarity = require('./similarity');
 
-module.exports = function group(tx, groups) {
-	groups = groups || [];
+module.exports = function group(tx, options) {
+	options = options || {};
+	var groups = options.groups || [];
+	var threshold = options.threshold || 1;
 	var skip = [];
 
 	tx.forEach((t1, i) => {
@@ -11,7 +13,7 @@ module.exports = function group(tx, groups) {
 
 		tx.slice(i + 1).forEach((t2, j) => {
 			if(~skip.indexOf(i + j + 1)) return;
-			if(similarity(t1, t2) < 1) {
+			if(similarity(t1, t2) < threshold) {
 				group.push(t2);
 				skip.push(i + j + 1);
 			}
