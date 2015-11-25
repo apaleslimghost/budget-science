@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "common-prefix": "^1.0.0",
     "fast-levenshtein": "^1.0.7",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",

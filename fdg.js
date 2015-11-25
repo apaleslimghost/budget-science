@@ -1,8 +1,6 @@
 var tx = require('./db.json');
-var _ = require('lodash');
 var levenshtein = require('fast-levenshtein').get;
-var util = require('util');
-var springy = require('springy');
+var prefix = require('common-prefix');
 
 function txSimilarity(ts) {
 	var amtSimilar = Math.pow(ts[0].amount - ts[1].amount, 2);
@@ -11,45 +9,31 @@ function txSimilarity(ts) {
 	return Math.pow(amtSimilar + payeeSimilar, 2);
 }
 
-function pairWith(x, ys) {
-	return ys.map(y => [x, y]);
-}
-
-function pairs(xs) {
-	if(xs.length === 0) return [];
-	return pairWith(xs[0], xs.slice(1)).concat(pairs(xs.slice(1)));
-}
-
-var similar = pairs(tx).map(function(ts) {
-	return {
-		ts: ts,
-		similar: txSimilarity(ts)
-	}
-});
-
 var groups = [];
+var skip = [];
 
-similar.forEach((pair, i) => {
-	console.log(i + '/' + similar.length);
-	for(var i = 0, l = groups.length; i < l; i++) {
-		var group = groups[i];
-		if(pair.similar < 2) {
-			if(~group.indexOf(pair.ts[0])) {
-				group.push(pair.ts[1]);
-				return;
-			}
+tx.forEach((t1, i) => {
+	if(~skip.indexOf(i)) return;
+	var group = [t1];
+	groups.push(group);
+	var k = groups.length;
 
-			if(~group.indexOf(pair.ts[1])) {
-				group.push(pair.ts[0]);
-				return;
-			}
-
-			groups.push(pair.ts);
-			return;
+	tx.slice(i + 1).forEach((t2, j) => {
+		if(~skip.indexOf(i + j + 1)) return;
+		if(txSimilarity([t1, t2]) < 1) {
+			group.push(t2);
+			skip.push(i + j + 1);
 		}
-	}
-
-	groups.push([pair.ts[0]]);
+	});
 });
 
-groups.forEach(console.log);
+var namedGroups = {};
+groups.forEach(group => {
+	var name = prefix(group.map(t => t.payee));
+	var suffixed = name;
+	var i = 0;
+	while(suffixed in namedGroups) suffixed = name + '-' + (++i);
+	namedGroups[suffixed] = group;
+});
+
+console.log(namedGroups);
