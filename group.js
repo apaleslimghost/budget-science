@@ -7,6 +7,7 @@ module.exports = function group(tx, options) {
 	var skip = [];
 
 	tx.forEach((t1, i) => {
+		if(~skip.indexOf(i)) return;
 		var group = [t1];
 		groups.push(group);
 		var k = groups.length;
