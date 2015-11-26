@@ -33,5 +33,5 @@ var recurring = groups
 }));
 
 console.log(nameGroups(recurring));
-console.log(Object.keys(nameGroups(groups)));
+console.log(Object.keys(nameGroups(recurring)));
 console.log(sum(recurring, 'perMonth'));
