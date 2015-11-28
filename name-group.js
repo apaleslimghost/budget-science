@@ -1,7 +1,6 @@
 var prefix = require('common-prefix')
 var titleCase = require('title-case');
-
-var normaliseWhitespace = s => s.replace(/\s+/g, ' ').trim();
+var normaliseWhitespace = require('./normalise');
 
 module.exports = function nameGroup(group, names) {
 	if(group[0].category) return group[0].category;

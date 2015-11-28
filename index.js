@@ -25,15 +25,20 @@ var sixMonthsAgo = lastTxDate.clone().subtract(6, 'months');
 console.log(lastTxDate.toDate(), sixMonthsAgo.toDate());
 
 var existingGroups = [];
-
 try {
 	existingGroups = require('./groups.json');
+} catch(e) {}
+
+var payeesAlias = {};
+try {
+	payeesAlias = require('./payees.json');
 } catch(e) {}
 
 var groups = group(tx, {
 	threshold: 5,
 	groups: existingGroups,
-	skip:   flatten(existingGroups.map(g => g.map(t => t.hash)))
+	skip:   flatten(existingGroups.map(g => g.map(t => t.hash))),
+	payeesAlias: payeesAlias
 })
 .map(groupMeta(function gauss(g) {
 	return gaussian(g.map(t => t.amount));
@@ -50,11 +55,12 @@ var recurring = groups
 .filter(g => {
 	var expectedIn6Months = 6 * MONTH_MS / g.timeGauss.μ;
 	var actualIn6Months = g.filter(t => moment(t.date).isAfter(sixMonthsAgo)).length;
-	return actualIn6Months / expectedIn6Months > 0.75;
+	return Math.pow(1 - actualIn6Months / expectedIn6Months, 2) < 0.1;
 })
 .map(groupMeta(function perMonth(g) {
 	return MONTH_MS * g.gauss.μ / g.timeGauss.μ;
 }));
+
 
 console.log(Object.keys(nameGroups(recurring)));
 console.log(sum(recurring, 'perMonth'));

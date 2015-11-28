@@ -14,7 +14,7 @@ module.exports = function group(tx, options) {
 
 		tx.slice(i + 1).forEach(t2 => {
 			if(~skip.indexOf(t2.hash)) return;
-			if(similarity(t1, t2) < threshold) {
+			if(similarity(t1, t2, options) < threshold) {
 				group.push(t2);
 				skip.push(t2.hash);
 			}
