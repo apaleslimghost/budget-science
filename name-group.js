@@ -4,6 +4,8 @@ var titleCase = require('title-case');
 var normaliseWhitespace = s => s.replace(/\s+/g, ' ').trim();
 
 module.exports = function nameGroup(group, names) {
+	if(group[0].category) return group[0].category;
+
 	var payees = group.map(t => normaliseWhitespace(titleCase(t.payee)));
 	var name = normaliseWhitespace(prefix(payees) || payees.join(', '));
 	var suffixed = name;
