@@ -5,6 +5,8 @@ var nameGroups = require('./name-groups');
 var sortBy = require('lodash.sortby');
 var pairs = xs => xs.length < 2 ? [] : [xs.slice(0, 2)].concat(pairs(xs.slice(1)));
 var sum = require('lodash.sum');
+var flatten = require('lodash.flatten');
+var fs = require('fs');
 
 var MONTH_MS = (365.2425 / 12) * 24 * 60 * 60 * 1000;
 
@@ -15,7 +17,17 @@ function groupMeta(fn) {
 	};
 }
 
-var groups = group(tx, {threshold: 5})
+var existingGroups = [];
+
+try {
+	existingGroups = require('./groups.json');
+} catch(e) {}
+
+var groups = group(tx, {
+	threshold: 5,
+	groups: existingGroups,
+	skip:   flatten(existingGroups.map(g => g.map(t => t.hash)))
+})
 .map(groupMeta(function gauss(g) {
 	return gaussian(g.map(t => t.amount));
 }))
@@ -32,6 +44,4 @@ var recurring = groups
 	return MONTH_MS * g.gauss.μ / g.timeGauss.μ;
 }));
 
-console.log(nameGroups(recurring));
-console.log(Object.keys(nameGroups(recurring)));
-console.log(sum(recurring, 'perMonth'));
+fs.writeFile('groups.json', JSON.stringify(groups), 'utf8');
