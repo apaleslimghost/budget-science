@@ -44,25 +44,24 @@ var groups = group(tx, {
 	return gaussian(g.map(t => t.amount));
 }))
 .map(groupMeta(function timeGauss(g) {
-	if(g.length <= 2) return;
+	if(g.length <= 2) return {};
 	return gaussian(pairs(sortBy(g, t => new Date(t.date))).map(p => {
 		return new Date(p[1].date) - new Date(p[0].date);
 	}));
-}));
-
-var recurring = groups
-.filter(g => g.length > 2 && g.timeGauss.σ < g.timeGauss.μ / 10)
-.filter(g => {
+}))
+.map(groupMeta(function recurring(g) {
 	var expectedIn6Months = 6 * MONTH_MS / g.timeGauss.μ;
 	var actualIn6Months = g.filter(t => moment(t.date).isAfter(sixMonthsAgo)).length;
-	return Math.pow(1 - actualIn6Months / expectedIn6Months, 2) < 0.1;
-})
+
+	return g.length > 2
+	    && g.timeGauss.σ < g.timeGauss.μ / 10
+	    && Math.pow(1 - actualIn6Months / expectedIn6Months, 2) < 0.1;
+}))
 .map(groupMeta(function perMonth(g) {
 	return MONTH_MS * g.gauss.μ / g.timeGauss.μ;
 }));
 
-
-console.log(Object.keys(nameGroups(recurring)));
-console.log(sum(recurring, 'perMonth'));
+console.log(nameGroups(groups));
+console.log(sum(groups.filter(g => g.recurring), 'perMonth'));
 
 fs.writeFile('groups.json', JSON.stringify(groups, null, 2), 'utf8');
