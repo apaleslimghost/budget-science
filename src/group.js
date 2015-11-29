@@ -79,10 +79,6 @@ module.exports = class Group {
 		return MONTH_MS * this.gaussian.μ / this.timeGaussian.μ;
 	}
 
-	get name() {
-		return nameGroup(this.transactions);
-	}
-
 	get length() {
 		return this.transactions.length;
 	}
