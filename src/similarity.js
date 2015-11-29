@@ -1,13 +1,16 @@
 var levenshtein = require('fast-levenshtein').get;
+var defaults = require('lodash.defaults');
+
 var normaliseWhitespace = require('./normalise');
 
 var absMax = (a, b) => (Math.abs(a) > Math.abs(b)) ? a : b;
 
 module.exports = function similarity(t1, t2, options) {
-	options = options || {};
-	var payeeWeight  = options.payeeWeight  || 3;
-	var amountWeight = options.amountWeight || 1;
-	var payeesAlias  = options.payeesAlias  || {};
+	var {payeeWeight, amountWeight, payeesAlias} = defaults(options, {
+		payeeWeight:  3,
+		amountWeight: 1,
+		payeesAlias:  {}
+	});
 
 	var amtSimilar = Math.pow((t1.amount - t2.amount) / absMax(t1.amount, t2.amount), 2) / amountWeight;
 	var payeeSimilar = levenshtein(t1.payee, t2.payee) / payeeWeight;

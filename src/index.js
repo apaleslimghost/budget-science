@@ -1,11 +1,8 @@
 var tx = require('../db.json'); 
 var Group = require('./group');
-var nameGroups = require('./name-groups');
 var sum = require('lodash.sum');
 var flatten = require('lodash.flatten');
 var fs = require('fs');
-
-
 
 var existingGroups = [];
 try {
