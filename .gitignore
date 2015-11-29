@@ -4,3 +4,4 @@ config.json
 bundle.js
 groups.json
 payees.json
+lib
