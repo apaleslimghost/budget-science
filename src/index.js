@@ -9,13 +9,13 @@ var mapValues = require('lodash.mapvalues');
 var similarity = require('./similarity');
 var TransactionGroup = require('./group');
 
-function txMonth(tx) {
+var txMonth = payday => function txMonth(tx) {
 	var m = moment(tx.date);
-	var twentySeventh = m.clone().date(27);
+	var twentySeventh = m.clone().date(payday);
 	return (
 		m.isAfter(twentySeventh) ? m.add(1, 'month') : m
 	).format('YY-MM');
-}
+};
 
 module.exports = class GroupedTransactions {
 	static group(tx, options = {}) {
@@ -75,11 +75,11 @@ module.exports = class GroupedTransactions {
 		return this.recurring().splitInOut();
 	}
 
-	byMonth() {
-		return groupBy(this.transactions, txMonth);
+	byMonth(payday = 0) {
+		return groupBy(this.transactions, txMonth(payday));
 	}
 
-	sumByMonth() {
-		return mapValues(this.byMonth(), g => sum(g, 'amount'));
+	sumByMonth(payday = 0) {
+		return mapValues(this.byMonth(payday), g => sum(g, 'amount'));
 	}
 }
