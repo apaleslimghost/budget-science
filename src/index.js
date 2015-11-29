@@ -8,6 +8,7 @@ var mapValues = require('lodash.mapvalues');
 
 var similarity = require('./similarity');
 var TransactionGroup = require('./group');
+var nameGroups = require('./name-groups');
 
 var txMonth = payday => function txMonth(tx) {
 	var m = moment(tx.date);
@@ -59,7 +60,7 @@ module.exports = class GroupedTransactions {
 	}
 
 	sumRecurring() {
-		return sum(this.recurring(), 'perMonth');
+		return sum(this.recurring().groups, 'perMonth');
 	}
 
 	recurring() {
@@ -81,5 +82,9 @@ module.exports = class GroupedTransactions {
 
 	sumByMonth(payday = 0) {
 		return mapValues(this.byMonth(payday), g => sum(g, 'amount'));
+	}
+
+	named() {
+		return nameGroups(this.groups);
 	}
 }

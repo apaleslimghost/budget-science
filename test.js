@@ -1,11 +1,9 @@
 var GroupedTransactions = require('./');
 var tx = require('./db.json');
-var sum = require('lodash.sum');
 
-var grouped = GroupedTransactions.group(tx);
-var sums = grouped.sumByMonth(27);
+var grouped = GroupedTransactions.group(tx, {
+	payeesAlias: require('./payees.json')
+});
+console.log(Object.keys(grouped.recurring().named()));
+console.log(grouped.sumRecurring());
 
-var sorted = {};
-Object.keys(sums).sort().forEach(k => sorted[k] = sums[k]);
-
-console.log(sorted);
