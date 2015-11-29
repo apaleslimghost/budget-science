@@ -1,5 +1,6 @@
 var GroupedTransactions = require('./');
 var tx = require('./db.json');
+var sum = require('lodash.sum');
 
-var grouped = new GroupedTransactions(tx);
-console.log(grouped.recurringInOut());
+var grouped = GroupedTransactions.group(tx);
+console.log(sum(grouped.transactions, 'amount'));
