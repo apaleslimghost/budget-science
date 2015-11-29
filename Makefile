@@ -8,6 +8,9 @@ lib/%.js: src/%.js
 	@mkdir -p $(@D)
 	babel $< $(BABEL_OPTS) -o $@
 
+run: all
+	node .
+
 db.json:
 	node -e "require('stepford-cache')('db.json', require('./config.json'))"
 

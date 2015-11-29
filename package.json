@@ -1,4 +1,5 @@
 {
+  "main": "lib",
   "dependencies": {
     "common-prefix": "^1.0.0",
     "fast-levenshtein": "^1.0.7",
@@ -15,6 +16,6 @@
     "nodemon": "^1.8.1"
   },
   "scripts": {
-    "start": "nodemon -w '*.js'"
+    "start": "nodemon --exec 'make run' -w 'src/*.js'"
   }
 }

@@ -1,4 +1,4 @@
-var tx = require('./db.json'); 
+var tx = require('../db.json'); 
 var gaussian = require('./gaussian');
 var group = require('./group');
 var nameGroups = require('./name-groups');
@@ -26,12 +26,12 @@ console.log(lastTxDate.toDate(), sixMonthsAgo.toDate());
 
 var existingGroups = [];
 try {
-	existingGroups = require('./groups.json');
+	existingGroups = require('../groups.json');
 } catch(e) {}
 
 var payeesAlias = {};
 try {
-	payeesAlias = require('./payees.json');
+	payeesAlias = require('../payees.json');
 } catch(e) {}
 
 var groups = group(tx, {
