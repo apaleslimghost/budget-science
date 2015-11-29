@@ -15,9 +15,7 @@ try {
 } catch(e) {}
 
 var groups = Group.groupTransactions(tx, {
-	threshold: 5,
 	groups: existingGroups,
-	skip:   flatten(existingGroups.map(g => g.transactions.map(t => t.hash))),
 	payeesAlias: payeesAlias
 });
 

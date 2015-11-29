@@ -1,5 +1,6 @@
 var sortBy = require('lodash.sortby');
 var defaults = require('lodash.defaults');
+var flatten = require('lodash.flatten');
 var moment = require('moment');
 
 var nameGroup = require('./name-group');
@@ -22,11 +23,13 @@ module.exports = class Group {
 	static groupTransactions(tx, options) {
 		var {skip, threshold} = defaults(options, {
 			groups: [],
-			skip: [],
+			get skip() {
+				return flatten(options.groups.map(g => g.transactions.map(t => t.hash)));
+			},
 			threshold: 1,
 		});
 
-		var groups = options.groups.map(Group.from)
+		var groups = options.groups.map(Group.from);
 
 		tx.forEach((t1, i) => {
 			if(~skip.indexOf(t1.hash)) return;
