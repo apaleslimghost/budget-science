@@ -1,10 +1,6 @@
 var sortBy = require('lodash.sortby');
-var defaults = require('lodash.defaults');
-var flatten = require('lodash.flatten');
 var moment = require('moment');
 
-var nameGroup = require('./name-group');
-var similarity = require('./similarity');
 var gaussian = require('./gaussian');
 
 var pairs = xs => xs.length < 2 ? [] : [xs.slice(0, 2)].concat(pairs(xs.slice(1)));
@@ -12,41 +8,12 @@ var pairs = xs => xs.length < 2 ? [] : [xs.slice(0, 2)].concat(pairs(xs.slice(1)
 const MONTH_MS = (365.2425 / 12) * 24 * 60 * 60 * 1000;
 var sixMonthsAgo = moment().subtract(6, 'months');
 
-module.exports = class Group {
+module.exports = class TransactionGroup {
 	static from(t) {
 		if(t instanceof Group) return t;
-		if(t.transactions) return new Group(t.transactions);
-		if(Array.isArray(t)) return new Group(t);
+		if(t.transactions)     return new Group(t.transactions);
+		if(Array.isArray(t))   return new Group(t);
 		throw new Error(`Can't convert ${t} to Group`);
-	}
-
-	static groupTransactions(tx, options) {
-		var {skip, threshold} = defaults(options, {
-			groups: [],
-			get skip() {
-				return flatten(options.groups.map(g => g.transactions.map(t => t.hash)));
-			},
-			threshold: 1,
-		});
-
-		var groups = options.groups.map(Group.from);
-
-		tx.forEach((t1, i) => {
-			if(~skip.indexOf(t1.hash)) return;
-			var group = new Group([t1]);
-			groups.push(group);
-			var k = groups.length;
-
-			tx.slice(i + 1).forEach(t2 => {
-				if(~skip.indexOf(t2.hash)) return;
-				if(similarity(t1, t2, options) < threshold) {
-					group.add(t2);
-					skip.push(t2.hash);
-				}
-			});
-		});
-
-		return groups;
 	}
 
 	constructor(transactions) {

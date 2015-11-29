@@ -5,6 +5,7 @@
     "fast-levenshtein": "^1.0.7",
     "lodash.defaults": "^3.1.2",
     "lodash.flatten": "^3.0.2",
+    "lodash.partition": "^3.1.1",
     "lodash.sortby": "^3.1.5",
     "lodash.sum": "^3.6.2",
     "moment": "^2.10.6",

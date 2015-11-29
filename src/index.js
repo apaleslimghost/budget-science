@@ -1,24 +1,48 @@
-var tx = require('../db.json'); 
-var Group = require('./group');
-var sum = require('lodash.sum');
+var partition = require('lodash.partition');
 var flatten = require('lodash.flatten');
-var fs = require('fs');
+var defaults = require('lodash.defaults');
+var sum = require('lodash.sum');
 
-var existingGroups = [];
-try {
-	existingGroups = require('../groups.json');
-} catch(e) {}
+var similarity = require('./similarity');
+var TransactionGroup = require('./group');
 
-var payeesAlias = {};
-try {
-	payeesAlias = require('../payees.json');
-} catch(e) {}
+module.exports = class GroupedTransactions {
+	constructor(tx, options = {}) {
+		var {skip, threshold} = defaults(options, {
+			groups: [],
+			get skip() {
+				return flatten(options.groups.map(g => g.transactions.map(t => t.hash)));
+			},
+			threshold: 1,
+		});
 
-var groups = Group.groupTransactions(tx, {
-	groups: existingGroups,
-	payeesAlias: payeesAlias
-});
+		this.groups = options.groups.map(TransactionGroup.from);
 
-console.log(sum(groups.filter(g => g.recurring), 'perMonth'));
+		tx.forEach((t1, i) => {
+			if(~skip.indexOf(t1.hash)) return;
+			var group = new TransactionGroup([t1]);
+			this.groups.push(group);
 
-fs.writeFile('groups.json', JSON.stringify(groups, null, 2), 'utf8');
+			tx.slice(i + 1).forEach(t2 => {
+				if(~skip.indexOf(t2.hash)) return;
+				if(similarity(t1, t2, options) < threshold) {
+					group.add(t2);
+					skip.push(t2.hash);
+				}
+			});
+		});
+	}
+
+	sumRecurring() {
+		return sum(this.recurring(), 'perMonth');
+	}
+
+	recurring() {
+		return this.groups.filter(group => group.recurring);
+	}
+
+	recurringInOut() {
+		var [incoming, outgoing] = partition(this.recurring(), group => group.perMonth > 0);
+		return {incoming, outgoing};
+	}
+}
