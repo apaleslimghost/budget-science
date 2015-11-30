@@ -21,7 +21,8 @@
     "watch-make": "^1.0.0"
   },
   "scripts": {
-    "start": "wmake run"
+    "start": "wmake run",
+    "prepublish": "make"
   },
   "name": "budget-science",
   "version": "1.0.0",
