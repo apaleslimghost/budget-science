@@ -22,5 +22,18 @@
   },
   "scripts": {
     "start": "wmake run"
-  }
+  },
+  "name": "budget-science",
+  "version": "1.0.0",
+  "description": "Do science with your budget",
+  "author": "Matt Brennan <matt@153.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quarterto/budget-science.git"
+  },
+  "bugs": {
+    "url": "https://github.com/quarterto/budget-science/issues"
+  },
+  "homepage": "https://github.com/quarterto/budget-science#readme"
 }
