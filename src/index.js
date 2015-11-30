@@ -54,7 +54,6 @@ module.exports = class GroupedTransactions {
 
 	outgoingPerMonth() {
 		return sum(this.groups, group => {
-			console.log(group.transactions[0].payee, group.gaussian, group.perMonth);
 			return isFinite(group.perMonth) && group.perMonth
 		});
 	}
