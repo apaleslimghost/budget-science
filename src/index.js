@@ -31,15 +31,15 @@ module.exports = class GroupedTransactions {
 		var groups = options.groups.map(TransactionGroup.from);
 
 		tx.forEach((t1, i) => {
-			if(~skip.indexOf(t1.hash)) return;
+			if(~skip.indexOf(t1.hash || t1._id)) return;
 			var group = new TransactionGroup([t1]);
 			groups.push(group);
 
 			tx.slice(i + 1).forEach(t2 => {
-				if(~skip.indexOf(t2.hash)) return;
+				if(~skip.indexOf(t2.hash || t2._id)) return;
 				if(similarity(t1, t2, options) < threshold) {
 					group.add(t2);
-					skip.push(t2.hash);
+					skip.push(t2.hash || t2._id);
 				}
 			});
 		});
