@@ -27,7 +27,7 @@
     "prepublish": "make"
   },
   "name": "budget-science",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Do science with your budget",
   "author": "Matt Brennan <matt@153.io>",
   "license": "MIT",
