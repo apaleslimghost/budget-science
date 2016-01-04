@@ -10,13 +10,15 @@ var similarity = require('./similarity');
 var TransactionGroup = require('./group');
 var nameGroups = require('./name-groups');
 
-var txMonth = payday => function txMonth(tx) {
-	var m = moment(tx.date);
-	var twentySeventh = m.clone().date(payday);
+var payMonth = payday => function payMonth(date) {
+	var m = moment(date);
+	var paydayMoment = m.clone().date(payday);
 	return (
-		m.isAfter(twentySeventh) ? m.add(1, 'month') : m
+		m.isAfter(paydayMoment) ? m.add(1, 'month') : m
 	).format('YY-MM');
 };
+
+var txMonth = tx => payMonth(tx.date);
 
 module.exports = class GroupedTransactions {
 	static group(tx, options = {}) {
@@ -53,9 +55,7 @@ module.exports = class GroupedTransactions {
 	}
 
 	outgoingPerMonth() {
-		return sum(this.groups, group => {
-			return isFinite(group.perMonth) && group.perMonth
-		});
+		return sum(this.groups, group => isFinite(group.perMonth) && group.perMonth);
 	}
 
 	sumRecurring() {
@@ -79,11 +79,23 @@ module.exports = class GroupedTransactions {
 		return groupBy(this.transactions, txMonth(payday));
 	}
 
+	byWeek() {
+		return groupBy(this.transactions, tx => moment(tx.date).startOf('week'));
+	}
+
 	sumByMonth(payday = 0) {
 		return mapValues(this.byMonth(payday), g => sum(g, 'amount'));
 	}
 
 	named() {
 		return nameGroups(this.groups);
+	}
+
+	notRecurring() {
+		return new GroupedTransactions(this.groups.filter(group => !group.recurring));
+	}
+
+	thisMonth(payday = 0) {
+		return this.byMonth(payday)[payMonth(new Date())];
 	}
 }
