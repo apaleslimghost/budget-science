@@ -5,6 +5,7 @@ var sum = require('lodash.sum');
 var moment = require('moment');
 var groupBy = require('lodash.groupby');
 var mapValues = require('lodash.mapvalues');
+var computed = require('computed-decorator');
 
 var similarity = require('./similarity');
 var TransactionGroup = require('./group');
@@ -49,53 +50,65 @@ module.exports = class GroupedTransactions {
 		return new GroupedTransactions(groups);
 	}
 
-	constructor(groups) {
+	constructor(groups, {payday = 0} = {}) {
+		this.payday = payday;
 		this.groups = groups;
 		this.transactions = flatten(groups.map(g => g.transactions));
 	}
 
+	@computed('groups')
 	outgoingPerMonth() {
 		return sum(this.groups, group => isFinite(group.perMonth) && group.perMonth);
 	}
 
+	@computed('recurring')
 	sumRecurring() {
 		return sum(this.recurring().groups, 'perMonth');
 	}
 
+	@computed('groups')
 	recurring() {
 		return new GroupedTransactions(this.groups.filter(group => group.recurring));
 	}
 
+	@computed('groups')
 	splitInOut() {
 		var [incoming, outgoing] = partition(this.groups, group => group.gaussian.μ > 0);
 		return {incoming, outgoing};
 	}
 
+	@computed('recurring')
 	recurringInOut() {
 		return this.recurring().splitInOut();
 	}
 
-	byMonth(payday = 0) {
-		return groupBy(this.transactions, txMonth(payday));
+	@computed('transactions', 'payday')
+	byMonth() {
+		return groupBy(this.transactions, txMonth(this.payday));
 	}
 
+	@computed('transactions')
 	byWeek() {
 		return groupBy(this.transactions, tx => moment(tx.date).startOf('week'));
 	}
 
-	sumByMonth(payday = 0) {
-		return mapValues(this.byMonth(payday), g => sum(g, 'amount'));
+	@computed('byMonth')
+	sumByMonth() {
+		return mapValues(this.byMonth(), g => sum(g, 'amount'));
 	}
 
+	@computed('groups')
 	named() {
 		return nameGroups(this.groups);
 	}
 
+	@computed('groups')
 	notRecurring() {
 		return new GroupedTransactions(this.groups.filter(group => !group.recurring));
 	}
 
-	thisMonth(payday = 0) {
-		return this.byMonth(payday)[payMonth(new Date())];
+	@computed('byMonth')
+	thisMonth() {
+		return this.byMonth()[payMonth(new Date())];
 	}
 }

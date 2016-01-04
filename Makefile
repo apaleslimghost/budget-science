@@ -1,6 +1,6 @@
 SRC_FILES = $(wildcard src/*.js)
 JS_FILES = $(patsubst src/%, lib/%, $(SRC_FILES))
-BABEL_OPTS = --presets es2015 --plugins transform-class-properties
+BABEL_OPTS = --presets es2015 --plugins transform-class-properties,transform-decorators-legacy
 
 all: $(JS_FILES)
 
