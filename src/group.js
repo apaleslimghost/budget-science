@@ -1,7 +1,6 @@
 var sortBy = require('lodash.sortby');
 var moment = require('moment');
-
-var gaussian = require('./gaussian');
+var gaussian = require('@quarterto/gaussian');
 
 var pairs = xs => xs.length < 2 ? [] : [xs.slice(0, 2)].concat(pairs(xs.slice(1)));
 

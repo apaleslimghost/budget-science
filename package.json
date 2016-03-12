@@ -1,6 +1,7 @@
 {
   "main": "lib",
   "dependencies": {
+    "@quarterto/gaussian": "^1.0.0",
     "common-prefix": "^1.0.0",
     "computed-decorator": "^1.0.0",
     "fast-levenshtein": "^1.0.7",
