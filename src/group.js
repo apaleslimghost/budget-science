@@ -38,10 +38,11 @@ module.exports = class TransactionGroup {
 	get recurring() {
 		var expectedIn6Months = 6 * MONTH_MS / this.timeGaussian.μ;
 		var actualIn6Months = this.transactions.filter(t => moment(t.date).isAfter(sixMonthsAgo)).length;
+		var sdevThreshold = 2 * MONTH_MS * Math.atan(this.timeGaussian.μ / MONTH_MS) / 10;
 
 		return this.length > 2
-		    && this.timeGaussian.σ < this.timeGaussian.μ / 10
-		    && Math.pow(1 - actualIn6Months / expectedIn6Months, 2) < 0.1;
+		  && this.timeGaussian.σ < sdevThreshold
+		  && Math.pow(1 - actualIn6Months / expectedIn6Months, 2) < 0.1;
 	}
 
 	get perMonth() {

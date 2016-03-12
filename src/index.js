@@ -67,7 +67,8 @@ module.exports = class GroupedTransactions {
 	}
 
 	splitInOut() {
-		var [incoming, outgoing] = partition(this.groups, group => group.gaussian.μ > 0);
+		var [incoming, outgoing] = partition(this.groups, group => group.gaussian.μ > 0)
+					.map(group => new GroupedTransactions(group));
 		return {incoming, outgoing};
 	}
 
@@ -97,5 +98,9 @@ module.exports = class GroupedTransactions {
 
 	thisMonth(payday = 0) {
 		return this.byMonth(payday)[payMonth(new Date())];
+	}
+
+	toJSON() {
+		return this.groups.map(group => group.toJSON());
 	}
 }
