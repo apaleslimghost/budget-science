@@ -8,7 +8,7 @@ lib/%.js: src/%.js
 	@mkdir -p $(@D)
 	babel $< $(BABEL_OPTS) -o $@
 
-run: all test.js test.json
+run: all test.js
 	node test.js
 
 db.json:
