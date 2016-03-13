@@ -5,20 +5,11 @@ var sum = require('lodash.sum');
 var moment = require('moment');
 var groupBy = require('lodash.groupby');
 var mapValues = require('lodash.mapvalues');
+var maxBy = require('lodash.maxby');
 
 var similarity = require('./similarity');
 var TransactionGroup = require('./group');
 var nameGroups = require('./name-groups');
-
-var payMonth = payday => function payMonth(date) {
-	var m = moment(date);
-	var paydayMoment = m.clone().date(payday);
-	return (
-		m.isAfter(paydayMoment) ? m.add(1, 'month') : m
-	).format('YY-MM');
-};
-
-var txMonth = tx => payMonth(tx.date);
 
 module.exports = class GroupedTransactions {
 	static group(tx, options = {}) {
@@ -49,9 +40,14 @@ module.exports = class GroupedTransactions {
 		return new GroupedTransactions(groups);
 	}
 
-	constructor(groups) {
+	constructor(groups, parent = this) {
 		this.groups = groups;
+		this.parent = parent;
 		this.transactions = flatten(groups.map(g => g.transactions));
+	}
+
+	subgroup(groups) {
+		return new GroupedTransactions(groups, this.parent || this);
 	}
 
 	outgoingPerMonth() {
@@ -63,12 +59,12 @@ module.exports = class GroupedTransactions {
 	}
 
 	recurring() {
-		return new GroupedTransactions(this.groups.filter(group => group.recurring));
+		return this.subgroup(this.groups.filter(group => group.recurring));
 	}
 
 	splitInOut() {
 		var [incoming, outgoing] = partition(this.groups, group => group.gaussian.μ > 0)
-					.map(group => new GroupedTransactions(group));
+					.map(group => this.subgroup(group));
 		return {incoming, outgoing};
 	}
 
@@ -76,28 +72,41 @@ module.exports = class GroupedTransactions {
 		return this.recurring().splitInOut();
 	}
 
-	byMonth(payday = 0) {
-		return groupBy(this.transactions, txMonth(payday));
-	}
-
-	byWeek() {
-		return groupBy(this.transactions, tx => moment(tx.date).startOf('week'));
-	}
-
-	sumByMonth(payday = 0) {
-		return mapValues(this.byMonth(payday), g => sum(g, 'amount'));
-	}
-
 	named() {
 		return nameGroups(this.groups);
 	}
 
 	notRecurring() {
-		return new GroupedTransactions(this.groups.filter(group => !group.recurring));
+		return this.subgroup(this.groups.filter(group => !group.recurring));
 	}
 
-	thisMonth(payday = 0) {
-		return this.byMonth(payday)[payMonth(new Date())];
+	lastPayday() {
+		var oneMonthAgo = moment().subtract(1, 'month');
+		var txThisMonth = this.parent.transactions.filter(tx => !moment(tx.date).isBefore(oneMonthAgo));
+		var paydayGroup = maxBy(this.parent.recurringInOut().incoming.groups, 'perMonth');
+		return new Date(txThisMonth.filter(tx => paydayGroup.transactions.some(tx2 => tx2 === tx))[0].date);
+	}
+
+	thisMonth() {
+		var payday = this.lastPayday();
+		return this.transactions.filter(tx => !moment(tx.date).isBefore(payday));
+	}
+
+	thisMonthBeforeThisWeek() {
+		var startOfWeek = moment().startOf('isoweek');
+		return this.thisMonth().filter(tx => moment(tx.date).isBefore(startOfWeek));
+	}
+
+	thisWeek() {
+		var startOfWeek = moment().startOf('isoweek');
+		return this.transactions.filter(tx => !moment(tx.date).isBefore(startOfWeek));
+	}
+
+	thisMonthRecurring() {
+		var recurring = this.recurring();
+		return mapValues(this.splitInOut(), o => o
+										 .thisMonth()
+										 .filter(tx => recurring.transactions.some(tx2 => tx2 === tx)));
 	}
 
 	toJSON() {
